@@ -58,7 +58,6 @@ TEMPLATES = [
         'DIRS': [
             # está é a prioridade do django p usar templates com render
             BASE_DIR / 'base_templates',
-            BASE_DIR / 'recipes' / 'templates_temp'
         ],
         'APP_DIRS': True,
         'OPTIONS': {
