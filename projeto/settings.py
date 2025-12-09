@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'recipes',  # Precise nomear app para que função render funcione
 ]
 
 MIDDLEWARE = [
@@ -54,7 +55,11 @@ ROOT_URLCONF = 'projeto.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            # está é a prioridade do django p usar templates com render
+            BASE_DIR / 'base_templates',
+            BASE_DIR / 'recipes' / 'templates_temp'
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
