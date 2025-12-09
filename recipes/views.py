@@ -3,4 +3,4 @@ from django.shortcuts import render
 
 
 def home(request):  # servidor recebe request # Ao invés de httresponse, usamos render, mas lembre que django não sabe que recipes existe
-    return render(request, 'recipes/home.html', context={'name': 'Luiz Otávio', })
+    return render(request, 'recipes/pages/home.html', context={'name': 'Luiz Otávio', })
