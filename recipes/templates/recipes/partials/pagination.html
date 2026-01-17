@@ -1,0 +1,31 @@
+{% if recipes.has_other_pages %}
+    <div class="container pagination">
+        <div class="pagination-content">
+            {% if pagination_range.first_page_out_of_range %}
+                <a class="page-link page-item" href="?page=1{{ additional_url_query }}">1</a>
+                <span class="page-item">...</span>
+            {% endif %}
+            {% comment %} Quando minha página primeira página não estiver visível ela aparece na lista {% endcomment %}
+
+            {% for page in pagination_range.pagination %} {% comment %} pagination retorna o dictornary com valores, e o laço percorre cada numero e joga na variavel page. Resumo: A página atual que o usuário clica e serva de base sempre será da cor preta {% endcomment %} 
+                {% if pagination_range.current_page == page %} {% comment %}  Caso a página atual seja igual a pagina selecionada deixará o botão dark {% endcomment %}
+                    <a href="?page={{ page }}" class="page-link page-item page-current">{{ page }}</a>
+                {% else %}
+                    <a href="?page={{ page }}" class="page-link page-item">{{ page }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if pagination_range.last_page_out_of_range %}
+                <span class="page-item">...</span>
+                <a class="page-link page-item" href="?page={{ pagination_range.total_pages }}">{{ pagination_range.total_pages }}</a>
+            {% endif %}
+            {% comment %} Quando minha última página não estiver visível ela aparece na lista {% endcomment %}
+
+            </div>
+        </div>
+    {% endif %}
+    {% comment %}
+            Acessamos o atributo(chave) pagination da função pagination_range. 
+            Função tem várias funcionalidades, escolhemos uma delas, essa sim retorna a lista.
+            Cada número que me mandou na lista desenhe um botão na tela.
+    {% endcomment %}
