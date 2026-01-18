@@ -1,8 +1,15 @@
+import os
+
 from django.db.models import Q
 from django.http.response import Http404
 from django.shortcuts import get_list_or_404, get_object_or_404, render
 from utils.pagination import make_pagination
+
 from recipes.models import Recipe
+
+PER_PAGES = int(
+    os.environ.get("PER_PAGE", 6)
+)  ## pega valor da variável de ambiente, transforma em int pois vem string
 
 
 def home(request):
@@ -10,21 +17,7 @@ def home(request):
         is_published=True,
     ).order_by("-id")
 
-    try:
-        current_page = int(
-            request.GET.get("page", 1)
-        )  ## pega só a página que user digitou na  URL
-    except ValueError:
-        current_page = 1
-
-    paginator = Paginator(
-        recipes, 9
-    )  ## pega todas as recipes  armazenadas no objeto recipes e divide elas em 9 páginas
-    page_obj = paginator.get_page(current_page)
-
-    pagination_range = make_pagination_range(  ## para mostrar apenas 4 números de páginas para escolher por vez dependendo de onde está -  lista de números que devem aparecer
-        paginator.page_range, 4, current_page
-    )  ## Garante que o usuário não fique confuso vendo 100 botões de página. Ele mostra apenas um "pedacinho" do menu.
+    page_obj, pagination_range = make_pagination(request, recipes, PER_PAGES)
 
     return render(
         request,
@@ -44,11 +37,16 @@ def category(request, category_id):
         ).order_by("-id")
     )
 
+    page_obj, pagination_range = make_pagination(
+        request, recipes, PER_PAGES
+    )  ## Toda vez se repete o 9, não queremos isto, vamos supor que eu mude isso. Preciso usar constante
+
     return render(
         request,
         "recipes/pages/category.html",
         context={
-            "recipes": recipes,
+            "recipes": page_obj,
+            "pagination_range": pagination_range,
             "title": f"{recipes[0].category.name} - Category | ",
         },
     )
@@ -84,12 +82,16 @@ def search(request):
         is_published=True,
     ).order_by("-id")
 
+    page_obj, pagination_range = make_pagination(request, recipes, PER_PAGES)
+
     return render(
         request,
         "recipes/pages/search.html",
         {
             "page_title": f'Search for "{search_term}" |',
             "search_term": search_term,
-            "recipes": recipes,
+            "recipes": page_obj,
+            "pagination_range": pagination_range,
+            "additional_url_query": f"&q={search_term}",
         },
     )
