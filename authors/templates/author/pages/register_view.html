@@ -15,7 +15,7 @@
         {% for field in form %} {% comment %} percorro cada formulário {% endcomment %}
           <div class="form-group">
             <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{field}}{% comment %}  criamos os identificadores do label com id e texto do label, para todos os campos {% endcomment %}
+            {{field}}{% comment %}  criamos os identificadores do label com id e texto do label, para todos os campos, field são imputs {% endcomment %}
 
             {% if field.help_text %}
               <p class="help-text">{{ field.help_text }}</p>
