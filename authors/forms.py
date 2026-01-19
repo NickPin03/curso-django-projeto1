@@ -14,3 +14,12 @@ class RegisterForm(forms.ModelForm):
             "email",
             "password",
         ]  ## Campos que quero ver -  fields = "__all__" -> se quero ver todos campos
+        # exclude = ['first_name'] -> Mostra todos os campos menos first_name
+
+    labels = {  ## Consigo renomear os labels
+        "username": "Username",
+        "first_name": "First Name",
+        "last_name": "Last Name",
+        "email": "E-mail",
+        "password": "Password",
+    }
