@@ -1,5 +1,6 @@
 from django import forms  ## Importamos classes para criar forms
 from django.contrib.auth.models import User  ## Puxamos de um model que já existe
+from django.core.exceptions import ValidationError
 
 
 def add_attr(field, attr_name, attr_new_val):  ## Cria valores pro atributo attr
@@ -9,22 +10,22 @@ def add_attr(field, attr_name, attr_new_val):  ## Cria valores pro atributo attr
     )  ## acrescenta novo valor em attr
 
 
-def add_placeholder(
+def add_placeholder(  ## Apenas para acrescentar placeholder
     field, placeholder_val
 ):  ## Função para adicionar especificamente placeholder
-    field.widget.attrs["placeholder"] = (
-        placeholder_val  ## adiciona valor ao placeholder
-    )
+    add_attr(field, "placeholder", placeholder_val)
 
 
 ## Para criar forms do Django, baseamos em classes
 class RegisterForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        add_attr(
+        add_placeholder(
             self.fields["username"], "Your username"
         )  ## Cria attrs por classe. Tirei o parametro placeholder e passei por função
-        add_attr(self.fields["email"], "Your e-mail")
+        add_placeholder(self.fields["email"], "Your e-mail")
+        add_placeholder(self.fields["last_name"], "Ex: Doe")
+        add_attr(self.fields["username"], "css", "a-css-class")
 
     """     self.fields["username"].widget.attrs[
             "placeholder"
@@ -113,6 +114,57 @@ Se pudessemos visualizar ficaria assim a estrutura:
                 }  ## sobescrever fora da class meta
             ),
         }
+
+    def clean_password(self):
+        data = self.cleaned_data.get("password")
+
+        if "atenção" in data:
+            raise ValidationError(
+                "Não digite %(pipoca)s no campo password",
+                code="invalid",
+                params={"pipoca": '"atenção"'},
+            )
+
+        return data
+
+    def clean_first_name(
+        self,
+    ):  ## Limpa os dados para um campo específico --> Quando a regra depende apenas daquele campo. Ex: "O nome não pode ser John Doe" ou "O usuário deve ter mais de 18 anos".
+        data = self.cleaned_data.get(
+            "first_name"
+        )  ## Pega dados campo first_name, cleaned data é um dicionário com os dados que já passaram pela validação do django
+
+        if "John Doe" in data:  ## Se houver o valor 'John Doe' em data mostrará o erro
+            raise ValidationError(
+                "Não digite %(value)s no campo first name",
+                code="invalid",
+                params={"value": '"John Doe"'},
+            )
+
+        return data
+
+    def clean(
+        self,
+    ):  ## Utilizado depois de todos os métodos clean individuais serem utilizados.
+        cleaned_data = (
+            super().clean()
+        )  ## Pegamos o metodo clean da super classe para verificar os dados
+        password = cleaned_data.get("password")
+        password2 = cleaned_data.get("password2")
+
+        if password != password2:
+            password_confirmation_error = ValidationError(
+                "Password and password2 must be equal", code="invalid"
+            )  ## Se for mesmo erro vrio uma variável para não repetir
+            raise ValidationError(  ## Dicionário de erros
+                {
+                    "password": password_confirmation_error,
+                    "password2": [
+                        password_confirmation_error,
+                        ## Another error, -> Posso colocar mais erros se quiser
+                    ],
+                }
+            )
 
     """ O que entendi de como esta classe lê os seus campos:
     Quando eu pego o objeto, não pego só o field e um input por vez ,

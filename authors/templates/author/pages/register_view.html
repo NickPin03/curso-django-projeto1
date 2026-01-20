@@ -8,7 +8,7 @@
   </div>
 
   <div class="main-content container">
-    <form action="{% url 'authors:create' %}" method="POST" novalidate> {% comment %}  para registrar usuário. Mando POST pra outra view, só era ler os dados e validar, não exibe, ela cria user ou retorna com erro {% endcomment %}
+    <form action="{% url 'authors:create' %}" method="POST"> {% comment %}  para registrar usuário. Mando POST pra outra view, só era ler os dados e validar, não exibe, ela cria user ou retorna com erro {% endcomment %}
       {% csrf_token %} {% comment %}  para permitir envio form. Protege que outro site mande dados  {% endcomment %}
 
       <div class="form-content form-content-grid">
@@ -25,6 +25,16 @@
           </div>
         {% endfor %}
       </div>
+
+      {% if form.errors  %}
+      <div class="form-content form-content-grid">
+        <div class="form-group">
+          <div class="message message-error">
+             There are errors in the form, please fix them and send again.
+          </div>
+        </div>
+      </div>
+      {% endif %}
 
       <div class="form-content form-content-grid">
         <div class="form-group">
