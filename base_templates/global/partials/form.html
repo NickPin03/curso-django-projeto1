@@ -8,7 +8,11 @@
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}{% comment %}  criamos os identificadores do label com id e texto do label, para todos os campos, field são imputs {% endcomment %}
-                    {% if field.help_text %}<p class="help-text">{{ field.help_text }}</p>{% endif %}
+                    
+                    {% if field.help_text %}
+                    <p class="help-text">{{ field.help_text }}</p>
+                    {% endif %}
+                    
                     {{ field.errors }} {% comment %} Mostra erros do formulário {% endcomment %}
                 </div>
             {% endfor %}
