@@ -1,0 +1,29 @@
+<div class="main-content container">
+    <form action="{{ form_action }}" method="POST" novalidate> {% comment %} Recebe caminho url da view específica que chamou {% endcomment %}
+        {% comment %}  para registrar usuário. Mando POST pra outra view, só era ler os dados e validar, não exibe, ela cria user ou retorna com erro {% endcomment %}
+        {% csrf_token %} {% comment %}  para permitir envio form. Protege que outro site mande dados  {% endcomment %}
+        <div class="form-content form-content-grid">
+            {% for field in form %}
+                {% comment %} percorro cada formulário {% endcomment %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}{% comment %}  criamos os identificadores do label com id e texto do label, para todos os campos, field são imputs {% endcomment %}
+                    {% if field.help_text %}<p class="help-text">{{ field.help_text }}</p>{% endif %}
+                    {{ field.errors }} {% comment %} Mostra erros do formulário {% endcomment %}
+                </div>
+            {% endfor %}
+        </div>
+        {% if form.errors %}
+            <div class="form-content form-content-grid">
+                <div class="form-group">
+                    <div class="message message-error">There are errors in the form, please fix them and send again.</div>
+                </div>
+            </div>
+        {% endif %}
+        <div class="form-content form-content-grid">
+            <div class="form-group">
+                <button type="submit">Send</button>
+            </div>
+        </div>
+    </form>
+</div>

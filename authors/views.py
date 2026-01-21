@@ -1,5 +1,7 @@
 from django.http import Http404
 from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.urls import reverse
 
 from .forms import RegisterForm
 
@@ -21,6 +23,9 @@ def register_view(request):
         "author/pages/register_view.html",
         {
             "form": form,  ## A Etiqueta ("form"): É o nome que o arquivo HTML vai usar para chamar esses dados.
+            "form_action": reverse(
+                "authors:create"
+            ),  ## Dados para informar onde quero que form envie dados. Com template form, não podemos especificar lá, pois será reutilizável
         },
     )
 
@@ -33,6 +38,19 @@ def register_create(request):  ## IMP: Essa view só vai ler os dados do POST.
     request.session["register_form_data"] = POST  ## Estou guardando os dados de POST.
 
     form = RegisterForm(POST)
+
+    if form.is_valid():
+        user = form.save(commit=False)
+        user.set_password(user.password)  ## criptografa a senha
+        user.save()
+        messages.success(request, "Your user is created, please log in.")
+
+        del request.session[
+            "register_form_data"
+        ]  ## Limpa dados, já que salvei no banco de dados
+
+    """  data = form.save(commit=False)  - Não salva formulário mas guarda seus dados
+        data.outro_campo = "outro_valor" - Adiciona valores ao formulário depois que tudo foi validado """
 
     return redirect(
         "authors:register"

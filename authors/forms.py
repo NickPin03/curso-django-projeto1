@@ -1,3 +1,5 @@
+import re
+
 from django import forms  ## Importamos classes para criar forms
 from django.contrib.auth.models import User  ## Puxamos de um model que já existe
 from django.core.exceptions import ValidationError
@@ -16,16 +18,34 @@ def add_placeholder(  ## Apenas para acrescentar placeholder
     add_attr(field, "placeholder", placeholder_val)
 
 
+def strong_password(password):
+    regex = re.compile(
+        r"^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}$"
+    )  ## Valida se password tem alguma letra de a-z, A-Z e 0-9 e 8 caracteres se houver qualquer um desses, é validado
+
+    if not regex.match(password):
+        raise ValidationError(
+            (
+                "Password must have at least one uppercase letter, "
+                "one lowercase letter and one number. The length should be "
+                "at least 8 characters."
+            ),
+            code="invalid",
+        )
+
+
 ## Para criar forms do Django, baseamos em classes
 class RegisterForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         add_placeholder(
             self.fields["username"], "Your username"
-        )  ## Cria attrs por classe. Tirei o parametro placeholder e passei por função
+        )  ## IMP: Cria attrs por classe. Tirei o parametro placeholder e passei por função, evita sobescrever campos existentes
         add_placeholder(self.fields["email"], "Your e-mail")
-        add_placeholder(self.fields["last_name"], "Ex: Doe")
-        add_attr(self.fields["username"], "css", "a-css-class")
+        add_placeholder(self.fields["first_name"], "Ex.: John")
+        add_placeholder(self.fields["last_name"], "Ex.: Doe")
+        add_placeholder(self.fields["password"], "Type your password")
+        add_placeholder(self.fields["password2"], "Repeat your password")
 
     """     self.fields["username"].widget.attrs[
             "placeholder"
@@ -58,19 +78,53 @@ Se pudessemos visualizar ficaria assim a estrutura:
 }   
     """
 
+    username = forms.CharField(
+        label="Username",
+        help_text=(
+            "Username must have letters, numbers or one of those @.+-_. "
+            "The length should be between 4 and 150 characters."
+        ),
+        error_messages={
+            "required": "This field must not be empty",
+            "min_length": "Username must have at least 4 characters",
+            "max_length": "Username must have less than 150 characters",
+        },
+        min_length=4,
+        max_length=150,
+    )
+
+    first_name = forms.CharField(
+        error_messages={"required": "Write your first name"},
+        label="First name",
+    )
+
+    last_name = forms.CharField(
+        error_messages={"required": "Write your last name"},
+        label="Last name",
+    )
+    email = forms.EmailField(
+        error_messages={"required": "E-mail is required"},
+        label="E-mail",
+        help_text="The e-mail must be valid.",
+    )
+
     password = forms.CharField(  ## Sempre que for sobescrever um campo existente em meta já passe tudo
-        required=True,
-        widget=forms.PasswordInput(attrs={"placeholder": "Your password"}),
+        widget=forms.PasswordInput(),
         error_messages={"required": "Password must not be empty"},
         help_text=(
             "Password must have at least one uppercase letter, "
-            "one lowercase letter and one number. The length should be"
-            "at least 8 characters"
+            "one lowercase letter and one number. The length should be "
+            "at least 8 characters."
         ),
+        validators=[
+            strong_password
+        ],  ## Passo aqui uma lista de validadores que quero que django use
+        label="Password",
     )
     password2 = forms.CharField(
-        required=True,
-        widget=forms.PasswordInput(attrs={"placeholder": "Repeat your password"}),
+        widget=forms.PasswordInput(),
+        label="Password2",
+        error_messages={"required": "Please, repeat your password"},
     )
 
     class Meta:  ## Classe que guarda meta-dados (configurações do form)
@@ -83,46 +137,14 @@ Se pudessemos visualizar ficaria assim a estrutura:
             "password",
         ]  ## Campos que quero ver no formulário
 
-        labels = {  ## Consigo renomear os labels (descrições dos inputs)
-            "username": "Username",
-            "first_name": "First Name",
-            "last_name": "Last Name",
-            "email": "E-mail",
-            "password": "Password",
-        }
-
-        help_texts = {  ## Textos de ajuda que aparecem abaixo do campo
-            "email": "The e-mail must be valid.",
-        }
-
-        error_messages = {  ## Mensagens customizadas para erros de validação
-            "username": {
-                "required": "This field must not be empty",
-            }
-        }
-
-        widgets = {  ## Para colocar classes CSS e atributos HTML, precisamos sobrescrever os widgets
-            "first_name": forms.TextInput(
-                attrs={
-                    "placeholder": "Type your first name here",
-                    "class": "input text-input",
-                }
-            ),
-            "password": forms.PasswordInput(
-                attrs={
-                    "placeholder": "Type your password here"
-                }  ## sobescrever fora da class meta
-            ),
-        }
-
-    def clean_password(self):
+    """def clean_password(self):
         data = self.cleaned_data.get("password")
 
         if "atenção" in data:
             raise ValidationError(
-                "Não digite %(pipoca)s no campo password",
+                "Não digite %(value)s no campo password",
                 code="invalid",
-                params={"pipoca": '"atenção"'},
+                params={"value": '"atenção"'},
             )
 
         return data
@@ -140,8 +162,19 @@ Se pudessemos visualizar ficaria assim a estrutura:
                 code="invalid",
                 params={"value": '"John Doe"'},
             )
-
         return data
+        """
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email", "")
+        exists = User.objects.filter(
+            email=email
+        ).exists()  ## Se existe um e-mail no banco igual do formulário não irá permitir
+
+        if exists:
+            raise ValidationError("User e-mail is already in use", code="invalid")
+
+        return email
 
     def clean(
         self,
@@ -155,7 +188,7 @@ Se pudessemos visualizar ficaria assim a estrutura:
         if password != password2:
             password_confirmation_error = ValidationError(
                 "Password and password2 must be equal", code="invalid"
-            )  ## Se for mesmo erro vrio uma variável para não repetir
+            )  ## Se for mesmo erro crio uma variável para não repetir
             raise ValidationError(  ## Dicionário de erros
                 {
                     "password": password_confirmation_error,
