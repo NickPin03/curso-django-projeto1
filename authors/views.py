@@ -1,5 +1,6 @@
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -107,7 +108,28 @@ def login_create(request):
         messages.error(
             request, "Invalid username or password"
         )  ## Se formulário não for válido, vazio, etc.
-    return redirect(login_url)
+    return redirect(reverse("authors:dashboard"))
+
+
+@login_required(
+    login_url="authors:login", redirect_field_name="next"
+)  ## Só pode acessar essa página se logado. Caso tente entrar numa página que precise estar logado, primeiro loga e depois o redirect direciona para onde queria ir antes. Next fala onde  queria ir.
+def logout_view(request):
+    if not request.POST:  ## Se pedido logout não for POST, retorna a pag login
+        return redirect(reverse("authors:login"))
+
+    if request.POST.get("username") != request.user.username:
+        return redirect(reverse("authors:login"))
+
+    logout(request)
+    return redirect(
+        reverse("authors:login")
+    )  ## Problema: Alguém pode mandar esse link de logout, e se eu estiver logado irei deslogar (CSRF)
+
+
+@login_required(login_url="authors:login", redirect_field_name="next")
+def dashboard(request):
+    return render(request, "authors/pages/dashboard.html")
 
 
 ## Problema: Não tenho como retornar dados para outra página. Essa view é para criar user e retornar erro, mas quero voltar pra register com os dados. Para isso usamos sessões, guardo no navegador do usuário

@@ -1,0 +1,10 @@
+{% extends 'global/base.html' %}
+{% block title %}
+  Register |
+{% endblock title %}
+{% block content %}
+  <div class="main-content center container">
+    <h2>Dashboard ({{ user }})</h2> {% comment %} user = request.user.username  {% endcomment %}
+  </div>
+  {% include "global/partials/messages.html" %}
+{% endblock content %}
