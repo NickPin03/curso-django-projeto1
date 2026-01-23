@@ -9,5 +9,8 @@
   </div>
 
   {% include 'global/partials/messages.html' %}
-  {% include 'global/partials/form.html' %} 
+
+  {% if not user.is_authenticated %} {% comment %} Apenas aparece form login se estiver deslogado {% endcomment %}
+     {% include 'global/partials/form.html' %} 
+  {% endif %}
 {% endblock content %}

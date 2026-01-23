@@ -1,0 +1,17 @@
+{% extends 'global/base.html' %}
+{% block title %}
+  Dashboard Recipe |
+{% endblock title %}
+
+{% block content %}
+  <div class="main-content center container">
+    <h2>Dashboard Recipe</h2> {% comment %} user = request.user.username  {% endcomment %}
+    {% include "global/partials/messages.html" %}
+    {% include "authors/pages/partials/login_message.html" %}
+
+    <div class="left"> {% comment %} Localiza a esquerda, esta div de form register_edit {% endcomment %}
+      {% include 'global/partials/form.html' %} 
+    </div>
+  </div>
+
+{% endblock content %}

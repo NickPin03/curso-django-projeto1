@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from authors.forms.recipe_form import AuthorRecipeForm
+from recipes.models import Recipe
 
 from .forms import LoginForm, RegisterForm
 
@@ -70,7 +72,7 @@ def login_view(request):
         {
             "form": form,
             "form_action": reverse("authors:login_create"),
-        },  ## Manda dados form, template form pega esses dados
+        },  ## Manda dados form, template form pega esses dados. No caso crio primeiro o formulário com classe, passo pro template e pra onde esse form vai ser enviado depois de clicar no btn enviar dele
     )
 
 
@@ -129,7 +131,44 @@ def logout_view(request):
 
 @login_required(login_url="authors:login", redirect_field_name="next")
 def dashboard(request):
-    return render(request, "authors/pages/dashboard.html")
+    recipes = Recipe.objects.filter(
+        is_published=False, author=request.user
+    )  ## Receitas do dashboard do autor serão apenas as não publicadas e receitas apenas do autor da sessao
+    return render(
+        request,
+        "authors/pages/dashboard.html",
+        context={
+            "recipes": recipes,
+        },
+    )
+
+
+@login_required(login_url="authors:login", redirect_field_name="next")
+def dashboard_recipe_edit(request, id):
+    recipe = Recipe.objects.filter(
+        is_published=False,
+        author=request.user,
+        pk=id,
+    ).first()  ## Irei editar receitas do user. OBS: Filter retorna uma queryset, é uma lista de coisas, quando usamos instance no form, queremos uma recipe, por isso pegamos a primeira com filter. OBS: Poderiamos usar o get como mostra na aula 184.
+
+    if not recipe:
+        raise Http404()
+
+    form = AuthorRecipeForm(request.POST or None, instance=recipe)
+    ## Formulário que pode receber instância (bound form) ou pode ser um form novo. Ele tem uma instância de recipe, quando ele clicar em save, salvará nesta instancia.
+    """ Resumo: 
+           Instance = Serve para ligar o formulário a um objeto que já existe no banco de dados. No caso pegamos até o ID específico dele. É preenchido todos os campos do HTML
+           None (GET) = Quando você  entrar na página de edição o POST está vazio, None.
+           request.POST = Quando você clicar no btn "Enviar" do form, os dados saem do navegador e chegam na view. Django cria form com novos dados que digitou no navegador, mas salvará no banco apenas com save().
+    """
+
+    return render(
+        request,
+        "authors/pages/dashboard_recipe.html",
+        context={
+            "form": form,
+        },
+    )
 
 
 ## Problema: Não tenho como retornar dados para outra página. Essa view é para criar user e retornar erro, mas quero voltar pra register com os dados. Para isso usamos sessões, guardo no navegador do usuário

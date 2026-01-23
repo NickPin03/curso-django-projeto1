@@ -1,12 +1,12 @@
   {% if request.user.is_authenticated %}
-      <di class="login-message">
+      <div class="login-message">
         Your are logged in with 
         {{ request.user.username }}. 
         Please, 
-        <form class="inline-form" action="{% url 'authors:logout' %}" method='POST'> {% comment %} Faço logout com POST, método Csrf protege de ataques, caso alguém mande link com logout e eu esteja com meu usuário logado {% endcomment %}F
+        <form class="inline-form" action="{% url 'authors:logout' %}" method='POST'> {% comment %} Faço logout com POST, método Csrf protege de ataques, caso alguém mande link com logout e eu esteja com meu usuário logado {% endcomment %}
           {% csrf_token %}
           <input type="hidden" name="username" value="{{ request.user.username }}">
           <button class="plaintext-button" type="submit">click here</button>
         </form> to logout.
       </div>
-    {% endif %}
+  {% endif %}
