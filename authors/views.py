@@ -154,7 +154,12 @@ def dashboard_recipe_edit(request, id):
     if not recipe:
         raise Http404()
 
-    form = AuthorRecipeForm(request.POST or None, instance=recipe)
+    form = AuthorRecipeForm(
+        data=request.POST or None,
+        files=request.FILES or None,
+        instance=recipe,
+        ## Para receber imagens precisa de FILES
+    )
     ## Formulário que pode receber instância (bound form) ou pode ser um form novo. Ele tem uma instância de recipe, quando ele clicar em save, salvará nesta instancia.
     """ Resumo: 
            Instance = Serve para ligar o formulário a um objeto que já existe no banco de dados. No caso pegamos até o ID específico dele. É preenchido todos os campos do HTML
@@ -162,11 +167,30 @@ def dashboard_recipe_edit(request, id):
            request.POST = Quando você clicar no btn "Enviar" do form, os dados saem do navegador e chegam na view. Django cria form com novos dados que digitou no navegador, mas salvará no banco apenas com save().
     """
 
+    if form.is_valid():
+        ## Agora, o form é válido e eu posso salvar
+        recipe = form.save(
+            commit=False
+        )  ## Não posso salvar de primeira, pois há outros campos faltantes que usuário não manipula
+        recipe.author = (
+            request.user
+        )  ## Garante que usuário da receita é o mesmo da requisição
+        recipe.preparation_steps_is_html = False  ## Não aceito html
+        recipe.is_published = False
+
+        recipe.save()  ## Depois de todo processo anterior, posso salvar o form
+
+        messages.success(request, "Sua receita foi salva com sucesso!")
+        return redirect(
+            reverse("authors:dashboard_recipe_edit", args=(id,))
+        )  ## Passo id da receita específica editada para redirecionar página
+
     return render(
         request,
         "authors/pages/dashboard_recipe.html",
         context={
             "form": form,
+            "recipe": recipe,
         },
     )
 

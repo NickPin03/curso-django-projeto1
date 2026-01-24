@@ -1,5 +1,5 @@
 <div class="main-content container">
-    <form action="{{ form_action }}" method="POST" novalidate> {% comment %} Recebe caminho url da view específica que chamou {% endcomment %}
+    <form class="main-form" action="{{ form_action }}" method="POST"  enctype="multipart/form-data" novalidate> {% comment %} Recebe caminho url da view específica que chamou {% endcomment %}
         {% comment %}  para registrar usuário. Mando POST pra outra view, só era ler os dados e validar, não exibe, ela cria user ou retorna com erro {% endcomment %}
         {% csrf_token %} {% comment %}  para permitir envio form. Protege que outro site mande dados  {% endcomment %}
         <div class="form-content form-content-grid">
@@ -15,6 +15,12 @@
                     
                     {{ field.errors }} {% comment %} Mostra erros do formulário {% endcomment %}
                 </div>
+
+                {% if field.name == 'cover' and field.value.url %}{% comment %}  Se for o campo cover e tiver valor na url mostra img {% endcomment %}
+                    <div class="span-2">
+                        <img src="{{ field.value.url }}" alt="Capa para {{ recipe.title }}">
+                    </div>
+                {% endif %}
             {% endfor %}
         </div>
         {% if form.errors %}
