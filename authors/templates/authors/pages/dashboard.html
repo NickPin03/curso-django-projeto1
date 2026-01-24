@@ -1,28 +1,39 @@
 {% extends 'global/base.html' %}
-{% block title %}
-  Register |
-{% endblock title %}
+
+{% block title %}Dashboard ({{ user }}) | {% endblock title %}
+
 {% block content %}
   <div class="main-content center container">
-    <h2>Dashboard ({{ user }})</h2> {% comment %} user = request.user.username  {% endcomment %}
-    {% include "global/partials/messages.html" %}
-    {% include "authors/pages/partials/login_message.html" %}
+    <h2>Dashboard ({{ user }})</h2>
 
-      <div class="authors-dashboard-container">
-          <h3>Your recipes</h3>
+    {% include 'authors\pages\partials\login_message.html' %}
+    {% include 'global/partials/messages.html' %}
 
-          <ul>
-            {% for recipe in recipes %}
-              <li>
-                <a href="{% url "authors:dashboard_recipe_edit" recipe.id %}">{{ recipe.title }}</a>
-              </li>
-            {% empty %}
-              <li>
-                <p>You do not have recipes, please create one</p>  
-              </li>
-            {% endfor %}
-          </ul>
-      </div>
+    <div class="authors-dashboard-container">
+      <h3>Your recipes</h3>
+
+      <ul>
+        {% for recipe in recipes %}
+          <li>
+            <a href="{% url 'authors:dashboard_recipe_edit' recipe.id %}">{{ recipe.title }}</a> - 
+            <form 
+            class="inline-form form-delete" 
+            action="{% url 'authors:dashboard_recipe_delete'%}"
+            method='POST'
+            >
+              {% csrf_token %}
+              <input type="hidden" name="id" value="{{ recipe.id }}"> {% comment %} Manda valor do id da receita, pois nao queremos mandar mais na url. Mandamos por post {% endcomment %}
+              <button class="plaintext-button" type="submit">❌</button>
+            </form>
+          </li>
+        {% empty %}
+          <li>
+            <p>You do not have recipes, please create one.</p>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
   </div>
 
-{% endblock content %}
+
+  {% endblock content %}
