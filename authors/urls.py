@@ -22,7 +22,7 @@ urlpatterns = [
     ),
     path(
         "dashboard/recipe/<int:id>/edit/",
-        views.dashboard_recipe_edit,
+        views.DashboardRecipe.as_view(),  ## Por padrão só é aceito funções, mas uso o metodo as_view() p/ gerar função view
         name="dashboard_recipe_edit",
     ),
 ]

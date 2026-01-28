@@ -59,6 +59,16 @@ def recipe(request, id):
         is_published=True,
     )
 
+    """ Representação conceitual da instância 'recipe' na memória
+        recipe = {
+        'id': 5,
+        'title': 'Lasanha à Bolonhesa',
+        'slug': 'lasanha-a-bolonhesa',
+        'author_id': 1,
+        'category_id': 3,
+    
+     }  """
+
     return render(
         request,
         "recipes/pages/recipe-view.html",

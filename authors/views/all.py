@@ -7,7 +7,7 @@ from django.urls import reverse
 from authors.forms.recipe_form import AuthorRecipeForm
 from recipes.models import Recipe
 
-from .forms import LoginForm, RegisterForm
+from authors.forms import LoginForm, RegisterForm
 
 
 # Create your views here.
@@ -157,7 +157,7 @@ def dashboard_recipe_edit(request, id):
     form = AuthorRecipeForm(
         data=request.POST or None,
         files=request.FILES or None,
-        instance=recipe,
+        instance=recipe,  ## Dúvida: Você entrega um objeto "velho" para o formulário (instance=recipe).
         ## Para receber imagens precisa de FILES
     )
     ## Formulário que pode receber instância (bound form) ou pode ser um form novo. Ele tem uma instância de recipe, quando ele clicar em save, salvará nesta instancia.
@@ -167,10 +167,10 @@ def dashboard_recipe_edit(request, id):
            request.POST = Quando você clicar no btn "Enviar" do form, os dados saem do navegador e chegam na view. Django cria form com novos dados que digitou no navegador, mas salvará no banco apenas com save().
     """
 
-    if form.is_valid():
+    if form.is_valid():  ## Só vem aqui caso seja true, ou seja dados novos no form
         ## Agora, o form é válido e eu posso salvar
-        recipe = form.save(
-            commit=False
+        recipe = (
+            form.save()  ## Pega o resultado do que o formulário processou POST e atualizou  e chama de recipe. O restante que faltou envio no form, atualizamos manualmente.
         )  ## Não posso salvar de primeira, pois há outros campos faltantes que usuário não manipula
         recipe.author = (
             request.user
@@ -187,7 +187,7 @@ def dashboard_recipe_edit(request, id):
 
     return render(
         request,
-        "authors/pages/dashboard_recipe.html",
+        "authors/pages/dashboard_recipe.html",  ## Envia para página do form os dados da recipe
         context={
             "form": form,
             "recipe": recipe,
