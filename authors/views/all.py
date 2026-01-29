@@ -167,38 +167,11 @@ def dashboard_recipe_edit(request, id):
            request.POST = Quando você clicar no btn "Enviar" do form, os dados saem do navegador e chegam na view. Django cria form com novos dados que digitou no navegador, mas salvará no banco apenas com save().
     """
 
-    if form.is_valid():  ## Só vem aqui caso seja true, ou seja dados novos no form
-        ## Agora, o form é válido e eu posso salvar
-        recipe = (
-            form.save()  ## Pega o resultado do que o formulário processou POST e atualizou  e chama de recipe. O restante que faltou envio no form, atualizamos manualmente.
-        )  ## Não posso salvar de primeira, pois há outros campos faltantes que usuário não manipula
-        recipe.author = (
-            request.user
-        )  ## Garante que usuário da receita é o mesmo da requisição
-        recipe.preparation_steps_is_html = False  ## Não aceito html
-        recipe.is_published = False
-
-        recipe.save()  ## Depois de todo processo anterior, posso salvar o form
-
-        messages.success(request, "Sua receita foi salva com sucesso!")
-        return redirect(
-            reverse("authors:dashboard_recipe_edit", args=(id,))
-        )  ## Passo id da receita específica editada para redirecionar página
-
-    return render(
-        request,
-        "authors/pages/dashboard_recipe.html",  ## Envia para página do form os dados da recipe
-        context={
-            "form": form,
-            "recipe": recipe,
-        },
-    )
-
 
 @login_required(login_url="authors:login", redirect_field_name="next")
 def dashboard_recipe_new(request):
     form = AuthorRecipeForm(
-        data=request.POST or None,
+        data=request.POST or None,  ##Coloca os dados dentro da caixa do formulário.
         files=request.FILES or None,
     )
 
@@ -219,30 +192,6 @@ def dashboard_recipe_new(request):
         "authors/pages/dashboard_recipe.html",
         context={"form": form, "form_action": reverse("authors:dashboard_recipe_new")},
     )
-
-
-@login_required(login_url="authors:login", redirect_field_name="next")
-def dashboard_recipe_delete(request):
-    if (
-        not request.POST
-    ):  ## So aceita metodo post, evita ataque CSR, acessarem por get, via link. Com post so eu mesmo logado consigo ter acesso, clicando no btn
-        raise Http404()
-
-    POST = request.POST
-    id = POST.get("id")  ## Pega Id enviado form post
-
-    recipe = Recipe.objects.filter(
-        is_published=False,
-        author=request.user,
-        pk=id,
-    ).first()
-
-    if not recipe:
-        raise Http404()
-
-    recipe.delete()
-    messages.success(request, "Deleted successfully.")
-    return redirect(reverse("authors:dashboard"))
 
 
 ## Problema: Não tenho como retornar dados para outra página. Essa view é para criar user e retornar erro, mas quero voltar pra register com os dados. Para isso usamos sessões, guardo no navegador do usuário
