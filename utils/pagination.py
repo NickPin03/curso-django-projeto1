@@ -45,8 +45,10 @@ def make_pagination(request, queryset, per_page, qty_pages=4):
 
     paginator = Paginator(
         queryset, per_page
-    )  ## pega todas as recipes  armazenadas no objeto recipes e divide elas em 9 páginas
-    page_obj = paginator.get_page(current_page)
+    )  ## pega todas as recipes  armazenadas no objeto recipes e divide elas em 9 receitas por página
+    page_obj = paginator.get_page(
+        current_page
+    )  ## Dividiu em 11 páginas, obj retorna pag atual
 
     pagination_range = make_pagination_range(  ## para mostrar apenas 4 números de páginas para escolher por vez dependendo de onde está -  lista de números que devem aparecer
         paginator.page_range, qty_pages, current_page
